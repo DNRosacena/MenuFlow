@@ -154,9 +154,8 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 👤 Author
 
-**Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Portfolio: [yourportfolio.com](https://yourportfolio.com)
+**Daxen Nathamiel Rosacena**
+- GitHub: [@DNRosacena](https://github.com/DNRosacena)
 
 ---
 
