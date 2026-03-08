@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LandingPage from "./components/LandingPage";
 import Navbar from "./components/NavBar";
 import MenuView from "./components/MenuView";
@@ -12,6 +12,19 @@ export default function App() {
   const [view, setView] = useState("menu");
   const [menu, setMenu] = useState(defaultMenu);
   const [orders, setOrders] = useState([]);
+
+  // Apply saved theme on load
+useEffect(() => {
+  const saved = localStorage.getItem("mf-theme");
+  if (saved) {
+    const theme = JSON.parse(saved);
+    const root = document.documentElement;
+    root.style.setProperty("--accent", theme.accent);
+    root.style.setProperty("--accent-dark", theme.accentDark);
+    root.style.setProperty("--bg", theme.bg);
+    root.style.setProperty("--text", theme.text);
+  }
+  }, []);
 
   const handleEnter = () => setShowLanding(false);
 

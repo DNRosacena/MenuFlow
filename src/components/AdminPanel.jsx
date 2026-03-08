@@ -1,9 +1,29 @@
 import { useState } from "react";
-import { Pencil, Trash2, Plus, X, Check, ShoppingBag, TrendingUp, LayoutGrid } from "lucide-react";
+import { Pencil, Trash2, Plus, X, Check, TrendingUp, LayoutGrid, Palette } from "lucide-react";
 
 const CATEGORIES = ["Starters", "Mains", "Desserts", "Drinks"];
 const TAGS = ["", "popular", "new", "vegetarian"];
 const emptyForm = { name: "", description: "", price: "", category: "Mains", tag: "", available: true, image: "" };
+
+const THEMES = [
+  { id: "classic",    name: "Classic",      preview: ["#ff6b35", "#faf9f7", "#1a1814"], accent: "#ff6b35", accentDark: "#e85a25", bg: "#faf9f7", text: "#1a1814" },
+  { id: "midnight",   name: "Midnight",     preview: ["#7c6aff", "#0f0f14", "#e8e6ff"], accent: "#7c6aff", accentDark: "#6a58e8", bg: "#0f0f14", text: "#e8e6ff" },
+  { id: "forest",     name: "Forest",       preview: ["#2d9e6b", "#f4f9f6", "#1a2e24"], accent: "#2d9e6b", accentDark: "#228c5a", bg: "#f4f9f6", text: "#1a2e24" },
+  { id: "rose",       name: "Rose",         preview: ["#e8547a", "#fff8f9", "#2a1018"], accent: "#e8547a", accentDark: "#d43d66", bg: "#fff8f9", text: "#2a1018" },
+  { id: "slate",      name: "Slate",        preview: ["#3b82f6", "#f8fafc", "#0f172a"], accent: "#3b82f6", accentDark: "#2563eb", bg: "#f8fafc", text: "#0f172a" },
+  { id: "amber",      name: "Amber",        preview: ["#f59e0b", "#fffbf0", "#1c1408"], accent: "#f59e0b", accentDark: "#d97706", bg: "#fffbf0", text: "#1c1408" },
+  { id: "charcoal",   name: "Charcoal",     preview: ["#e2e8f0", "#1e2028", "#f1f5f9"], accent: "#e2e8f0", accentDark: "#cbd5e1", bg: "#1e2028", text: "#f1f5f9" },
+  { id: "terracotta", name: "Terracotta",   preview: ["#c1694f", "#fdf6f0", "#2c1810"], accent: "#c1694f", accentDark: "#a85840", bg: "#fdf6f0", text: "#2c1810" },
+];
+
+const applyTheme = (theme) => {
+  const root = document.documentElement;
+  root.style.setProperty("--accent", theme.accent);
+  root.style.setProperty("--accent-dark", theme.accentDark);
+  root.style.setProperty("--bg", theme.bg);
+  root.style.setProperty("--text", theme.text);
+  localStorage.setItem("mf-theme", JSON.stringify(theme));
+};
 
 // ── Tiny SVG line chart ──────────────────────────────────────────
 function RevenueChart({ orders }) {
@@ -110,9 +130,10 @@ export default function AdminPanel({ menu, setMenu, orders = [] }) {
   const doneOrders    = orders.filter(o => o.status === "done").length;
 
   const TABS = [
-    { id: "menu",  label: "Menu Editor", icon: LayoutGrid },
-    { id: "sales", label: "Sales",       icon: TrendingUp },
-  ];
+    { id: "menu",   label: "Menu Editor", icon: LayoutGrid },
+    { id: "sales",  label: "Sales",       icon: TrendingUp },
+    { id: "themes", label: "Themes",      icon: Palette    },
+    ];
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "32px 20px" }}>
@@ -319,6 +340,103 @@ export default function AdminPanel({ menu, setMenu, orders = [] }) {
               </table>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ── THEMES TAB ── */}
+      {tab === "themes" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+
+          {/* Header */}
+          <div>
+            <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.3rem", fontWeight: 700, margin: "0 0 6px", color: "var(--text)" }}>
+              Color Themes
+            </h3>
+            <p style={{ color: "var(--muted)", fontSize: "0.875rem", margin: 0 }}>
+              Choose a palette to instantly restyle the entire app. Changes apply live and persist across sessions.
+            </p>
+          </div>
+
+          {/* Theme Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
+            {THEMES.map((theme) => {
+              const isActive = localStorage.getItem("mf-theme")
+                ? JSON.parse(localStorage.getItem("mf-theme")).id === theme.id
+                : theme.id === "classic";
+              return (
+                <button
+                  key={theme.id}
+                  onClick={() => applyTheme(theme)}
+                  style={{
+                    border: `2px solid ${isActive ? theme.accent : "var(--border)"}`,
+                    borderRadius: "16px", padding: "20px",
+                    background: theme.bg,
+                    cursor: "pointer", textAlign: "left",
+                    transition: "all 0.25s ease",
+                    boxShadow: isActive ? `0 0 0 4px ${theme.accent}30` : "var(--shadow-sm)",
+                    transform: isActive ? "translateY(-3px)" : "translateY(0)",
+                    position: "relative", overflow: "hidden",
+                  }}
+                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.transform = "translateY(-3px)"; }}
+                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.transform = "translateY(0)"; }}
+                >
+                  {/* Active checkmark */}
+                  {isActive && (
+                    <div style={{
+                      position: "absolute", top: "12px", right: "12px",
+                      width: "22px", height: "22px", borderRadius: "50%",
+                      background: theme.accent, display: "flex",
+                      alignItems: "center", justifyContent: "center",
+                    }}>
+                      <Check size={12} color="white" strokeWidth={3} />
+                    </div>
+                  )}
+
+                  {/* Color swatches */}
+                  <div style={{ display: "flex", gap: "6px", marginBottom: "14px" }}>
+                    {theme.preview.map((color, i) => (
+                      <div key={i} style={{
+                        width: i === 0 ? "32px" : "20px",
+                        height: "32px", borderRadius: "8px",
+                        background: color,
+                        border: "1px solid rgba(0,0,0,0.08)",
+                        transition: "transform 0.2s",
+                      }} />
+                    ))}
+                  </div>
+
+                  {/* Theme name */}
+                  <p style={{
+                    margin: 0, fontFamily: "var(--font-display)",
+                    fontSize: "0.95rem", fontWeight: 700,
+                    color: theme.text,
+                  }}>
+                    {theme.name}
+                  </p>
+
+                  {/* Accent hex */}
+                  <p style={{
+                    margin: "4px 0 0", fontSize: "0.72rem",
+                    color: theme.accent, fontFamily: "monospace",
+                    letterSpacing: "0.06em",
+                  }}>
+                    {theme.accent}
+                  </p>
+
+                  {/* Mini preview bar */}
+                  <div style={{
+                    marginTop: "14px", height: "4px", borderRadius: "2px",
+                    background: `linear-gradient(to right, ${theme.accent}, ${theme.accentDark})`,
+                  }} />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Reset note */}
+          <p style={{ color: "var(--muted)", fontSize: "0.78rem", textAlign: "center" }}>
+            Theme changes apply instantly across the entire app including the customer menu and staff views.
+          </p>
         </div>
       )}
 
